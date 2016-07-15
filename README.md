@@ -32,6 +32,27 @@ The dashboard GUI is on its way.
 - Go to `PATH_TO_REPO/src/data/` and you'll see a newly created text file with all your logs :)
 
 
+## Tracking
+
+### File Types
+
+
+| Application           |  OS X  |  Win  | Linux |
+| :---                  | :---:  | :---: | :---: |
+| IntelliJ IDEA         | x      | -     | -     |
+
+
+### Project Names
+
+| Service               |  OS X  |  Win  | Linux |
+| :---                  | :---:  | :---: | :---: |
+| git                   | -      | -     | -     |
+| node (package.json)   | -      | -     | -     |
+| php (composer.json)   | -      | -     | -     |
+| bower (bower.json)    | -      | -     | -     |
+
+
+
 ## TODO
 
 - Add support for getting project name from window title, by:
