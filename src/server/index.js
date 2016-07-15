@@ -9,8 +9,12 @@ var port = process.env.PORT || 9999,
 	router = express.Router();
 
 router.use(function (req, res, next) {
-	console.log(req.url);
 	next();
+});
+
+router.get('/', function (req, res) {
+	res.write('Activity Tracker server is running!');
+	res.end();
 });
 
 router.post('/activity', function (req, res) {
