@@ -20,6 +20,15 @@ function getProjectName(appName, windowTitle) {
 }
 
 
+function getFileType(appName, windowTitle) {
+	if (windowTitle.indexOf('.js') > -1) {
+		return ".js";
+	}
+
+	return "";
+}
+
+
 router.use(function (req, res, next) {
 	next();
 });
@@ -35,7 +44,8 @@ router.post('/activity', function (req, res) {
 	var response = {},
 		now = new Date(),
 		dateFormat = require('dateformat'),
-		projectName = "";
+		projectName = "",
+		fileType = "";
 
 	var data = req.query;
 	response.a = data.a;
@@ -43,9 +53,13 @@ router.post('/activity', function (req, res) {
 	response.t = now.getTime();
 
 	projectName = getProjectName(response.a, response.w);
-
 	if (projectName) {
 		response.p = projectName;
+	}
+
+	fileType = getFileType(response.a, response.w);
+	if (fileType) {
+		response.f = fileType;
 	}
 
 	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
