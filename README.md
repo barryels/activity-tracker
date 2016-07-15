@@ -64,3 +64,4 @@ The dashboard GUI is on its way.
 - Add config file support
 - Build a dashboard GUI with nice graphs, filters etc. e.g. Programming language breakdown, app usage, etc.
 - Add support for Windows and Linux
+- Prevent logging of private browsing in Chrome, Safari & Firefox
