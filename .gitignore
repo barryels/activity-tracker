@@ -1,0 +1,16 @@
+# System Files
+.DS_Store
+.Thumb
+
+# IntelliJ IDEA
+.idea
+*.iml
+
+# Log files
+*.log
+
+# Libraries
+node_modules
+
+# App
+/src/data/*
