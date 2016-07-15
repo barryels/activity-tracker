@@ -4,7 +4,6 @@
   "description": "",
   "scripts": {
     "client:osx:start": "osascript './src/client/osx/main.scpt'",
-    "client:osx:compile": "/usr/bin/osacompile -o ./src/client/osx/activity-tracker.app ./src/client/osx/main.scpt",
     "server:start:dev": "nodemon ./src/server/index.js",
     "server:start": "node ./src/server/index.js",
     "start:osx": "osascript 'src/client/osx/main.scpt'",
