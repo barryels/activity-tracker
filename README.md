@@ -17,7 +17,7 @@ The dashboard GUI is on its way.
 - Run `cd 'PATH_TO_REPO/src/client/osx'`
 	- Replace `PATH_TO_REPO` with the actual path where you cloned this repo to on your local system
 - Run `npm run start:osx`
-- To get file and project logging to work, you'll need to give "Terminal" [https://support.apple.com/en-za/HT202866](access for assistive devices), by: opening System Preferences > "Security & Privacy" > "Privacy" tab
+- To get file and project logging to work, you'll need to give "Terminal" [access for assistive devices](https://support.apple.com/en-za/HT202866), by: opening System Preferences > "Security & Privacy" > "Privacy" tab
     - Click the little lock icon in the bottom left corner
     - Type in your password
     - In the right hand side panel you should see a list of applications
