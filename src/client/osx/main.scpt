@@ -1,5 +1,7 @@
 global previousProcessName
 global previousWindowTitle
+global previousPowerState
+global previousClamshellState
 global mePath
 global projectPath
 global doQuit
@@ -65,6 +67,38 @@ end getProcessActiveWindow
 on trackActivity()
 	set doRequest to true
 
+	set _awake to "\"CurrentPowerState\"=4"
+	set _asleep to "\"CurrentPowerState\"=1"
+	set display_sleep_state to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
+
+	if display_sleep_state contains _awake then
+		if previousPowerState does not equal "AWAKE"
+			set previousPowerState to "AWAKE"
+			return my postActivityData("com.apple.PowerState", "AWAKE")
+		end if
+	else if display_sleep_state contains _asleep then
+		if previousPowerState does not equal "ASLEEP"
+			set previousPowerState to "ASLEEP"
+			return my postActivityData("com.apple.PowerState", "ASLEEP")
+		end if
+	end if
+
+
+	set display_clamshell_state to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
+
+	if display_clamshell_state contains "Yes"
+		if previousClamshellState does not equal "CLOSED"
+			set previousClamshellState to "CLOSED"
+			return my postActivityData("com.apple.Lid", "CLOSED")
+		end if
+	else
+		if previousClamshellState does not equal "OPEN"
+			set previousClamshellState to "OPEN"
+			return my postActivityData("com.apple.Lid", "OPEN")
+		end if
+	end if
+
+
 	set process to my getFrontmostProcess()
 	set processName to encode_text(name of process as text, true, true)
 	set windowTitle to encode_text(((my getProcessActiveWindow(process)) as text), true, true)
@@ -98,6 +132,7 @@ end postActivityData
 
 on startServer()
 	do shell script "/usr/local/bin/node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
+	return my postActivityData("com.barryels.ActivityTracker", "START")
 end startServer
 
 
@@ -109,6 +144,8 @@ end stopServer
 on run
 	set previousProcessName to ""
 	set previousWindowTitle to ""
+	set previousPowerState to ""
+	set previousClamshellState to ""
 	set mePath to POSIX path of ((path to me as text) & "::")
 	set projectPath to mePath & "../../"
 
