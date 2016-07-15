@@ -4,7 +4,7 @@ A simple tool to log application, file and project (not yet, but coming soon) us
 
 ## Installation
 
-### OSX 10.11 (Untested in prior versions of OSX, YMMV)
+### OS X 10.11 (Untested in prior versions of OS X, YMMV)
 
 - Install [node.js](https://nodejs.org/en/download/package-manager/#osx) version 5.12.0+
 - Open Terminal (/Applications/Utilities/Terminal.app)
