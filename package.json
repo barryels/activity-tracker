@@ -1,8 +1,11 @@
 {
   "name": "activity-monitor",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "",
   "scripts": {
+    "version:bump:patch": "npm version --no-git-tag-version patch",
+    "version:bump:minor": "npm version --no-git-tag-version minor",
+    "postversion": "node ./node_scripts/postversion/index.js",
     "client:osx:start": "osascript './src/client/osx/main.scpt'",
     "server:start:dev": "nodemon ./src/server/index.js",
     "server:start": "node ./src/server/index.js",
