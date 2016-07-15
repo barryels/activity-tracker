@@ -1,6 +1,12 @@
 # Activity Tracker
 
-A simple tool to log application, file and project (not yet, but coming soon) usage.
+A simple tool to log application, file and project (not yet, but coming soon) usage. Only runs on OS X currently, will work on adding Windows and Linux support, probably via Python (pull requests welcome).
+
+The client is a simple AppleScript that gets app and window title information from the OS (by default it polls every second, but only calls the server if the application and window title have changed since the last call)
+
+The server is a Node.js app that receives the app and window title data and appends it to a log file. Some basic intelligence will later be added to either the server, or the dashboard GUI, to pull information out of the window title, such as the project name, programming lanuage used, etc.
+
+The dashboard GUI is on its way.
 
 ## Installation
 
@@ -35,5 +41,5 @@ A simple tool to log application, file and project (not yet, but coming soon) us
     - A `composer.json` file, reading the `name` property, if empty, then the parent directory name
     - A `bower.json` file, reading the `name` property, if empty, then the parent directory name
 - Add config file support
-- Build a GUI with nice graphs and stuff
+- Build a dashboard GUI with nice graphs, filters etc. e.g. Programming language breakdown, app usage, etc.
 - Add support for Windows and Linux
