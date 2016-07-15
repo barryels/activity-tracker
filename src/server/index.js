@@ -6,26 +6,43 @@ var port = process.env.PORT || 9999,
 	app = express(),
 	bodyParser = require('body-parser'),
 	endOfLine = require('os').EOL,
-	router = express.Router();
+	router = express.Router(),
+	fileExtensionMimeTypes = require('./file-extension-mime-types');
 
 
 function getProjectName(appName, windowTitle) {
 	// TODO add cleverness here, farm out processing to application-specific adapters, so new ones can be added later
 
-	if (appName === "Google Chrome") {
-		return "Internetting";
+	if (appName === 'Google Chrome') {
+		return 'Internetting';
 	}
 
-	return "";
+	return '';
 }
 
 
-function getFileType(appName, windowTitle) {
-	if (windowTitle.indexOf('.js') > -1) {
-		return ".js";
+function getFileExtension(fileName) {
+	if (fileName.indexOf('.') > -1) {
+		return fileName.substr(fileName.lastIndexOf('.') + 1, fileName.length);
 	}
 
-	return "";
+	return '';
+}
+
+
+function getFilePath(appName, windowTitle) {
+	var filePath = '';
+
+	if (appName === 'idea') {
+		filePath = windowTitle.split(' - ')[0];
+	}
+
+	return filePath;
+}
+
+
+function getFileMimeType(fileExtension) {
+	return fileExtensionMimeTypes.getMimeTypeFromFileExtension(fileExtension);
 }
 
 
@@ -44,8 +61,9 @@ router.post('/activity', function (req, res) {
 	var response = {},
 		now = new Date(),
 		dateFormat = require('dateformat'),
-		projectName = "",
-		fileType = "";
+		projectName = '',
+		fileExtension = '',
+		fileMimeType = '';
 
 	var data = req.query;
 	response.a = data.a;
@@ -57,9 +75,9 @@ router.post('/activity', function (req, res) {
 		response.p = projectName;
 	}
 
-	fileType = getFileType(response.a, response.w);
-	if (fileType) {
-		response.f = fileType;
+	fileExtension = getFileExtension(getFilePath(response.a, response.w));
+	if (fileExtension) {
+		response.fe = fileExtension;
 	}
 
 	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
