@@ -132,6 +132,7 @@ end postActivityData
 
 on startServer()
 	do shell script "/usr/local/bin/node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
+	delay(2)
 	return my postActivityData("com.barryels.ActivityTracker", "START")
 end startServer
 
