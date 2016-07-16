@@ -578,7 +578,7 @@ module.exports = function () {
 			return list['_' + fileExtension];
 		}
 
-		return "unknown";
+		return '';
 	}
 
 	return {
