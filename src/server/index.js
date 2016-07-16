@@ -7,7 +7,8 @@ var port = process.env.PORT || 9999,
 	bodyParser = require('body-parser'),
 	endOfLine = require('os').EOL,
 	router = express.Router(),
-	fileExtensionMimeTypes = require('./file-extension-mime-types');
+	fileExtensionMimeTypes = require('./file-extension-mime-types'),
+	programmingLanguages = require('./programming-languages');
 
 
 function getProjectName(appName, windowTitle) {
@@ -23,7 +24,7 @@ function getProjectName(appName, windowTitle) {
 
 function getFileExtension(fileName) {
 	if (fileName.indexOf('.') > -1) {
-		return fileName.substr(fileName.lastIndexOf('.') + 1, fileName.length);
+		return fileName.substr(fileName.lastIndexOf('.'), fileName.length);
 	}
 
 	return '';
@@ -46,6 +47,11 @@ function getFileMimeType(fileExtension) {
 }
 
 
+function getFileProgrammingLanguage(fileExtension) {
+	return programmingLanguages.getProgrammingLanguageFromFileExtension(fileExtension);
+}
+
+
 router.use(function (req, res, next) {
 	next();
 });
@@ -63,7 +69,8 @@ router.post('/activity', function (req, res) {
 		dateFormat = require('dateformat'),
 		projectName = '',
 		fileExtension = '',
-		fileMimeType = '';
+		fileMimeType = '',
+		programmingLanguage = '';
 
 	var data = req.query;
 	response.a = data.a;
@@ -79,6 +86,14 @@ router.post('/activity', function (req, res) {
 	if (fileExtension) {
 		response.fe = fileExtension;
 	}
+
+	/*
+	// Do we really need to store the language or can we just infer it later on, from the file extension (which is currently stored)
+	programmingLanguage = getFileProgrammingLanguage(fileExtension);
+	if (programmingLanguage) {
+		response.pl = programmingLanguage;
+	}
+	*/
 
 	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
 	logStream.end(JSON.stringify(response) + endOfLine);
