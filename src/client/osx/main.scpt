@@ -1,7 +1,10 @@
+global CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE
+
 global previousProcessName
 global previousWindowTitle
 global previousPowerState
-global previousClamshellState
+global previousAppleClamshellState
+
 global mePath
 global projectPath
 global doQuit
@@ -84,17 +87,19 @@ on trackActivity()
 	end if
 
 
-	set display_clamshell_state to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
+	if CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE equals true
+		set AppleClamshellState to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
 
-	if display_clamshell_state contains "Yes"
-		if previousClamshellState does not equal "CLOSED"
-			set previousClamshellState to "CLOSED"
-			return my postActivityData("com.apple.Lid", "CLOSED")
-		end if
-	else
-		if previousClamshellState does not equal "OPEN"
-			set previousClamshellState to "OPEN"
-			return my postActivityData("com.apple.Lid", "OPEN")
+		if AppleClamshellState contains "Yes"
+			if previousAppleClamshellState does not equal "YES"
+				set previousAppleClamshellState to "YES"
+				return my postActivityData("com.apple.AppleClamshellState", "YES")
+			end if
+		else
+			if previousAppleClamshellState does not equal "NO"
+				set previousAppleClamshellState to "NO"
+				return my postActivityData("com.apple.AppleClamshellState", "NO")
+			end if
 		end if
 	end if
 
@@ -132,8 +137,6 @@ end postActivityData
 
 on startServer()
 	do shell script "/usr/local/bin/node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
---	delay(2)
---	return my postActivityData("com.barryels.ActivityTracker", "START")
 end startServer
 
 
@@ -146,7 +149,8 @@ on run
 	set previousProcessName to ""
 	set previousWindowTitle to ""
 	set previousPowerState to ""
-	set previousClamshellState to ""
+	set previousAppleClamshellState to ""
+	set CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE to false
 	set mePath to POSIX path of ((path to me as text) & "::")
 	set projectPath to mePath & "../../"
 
