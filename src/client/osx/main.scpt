@@ -1,9 +1,9 @@
-global CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE
+global CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE
 
 global previousProcessName
 global previousWindowTitle
-global previousApplePowerState
-global previousAppleClamshellState
+global previousDevicePowerState
+global previousDeviceClamshellState
 
 global mePath
 global projectPath
@@ -41,7 +41,7 @@ end encode_text
 on getFrontmostProcess()
 	tell application "System Events"
 		if exists process "ScreenSaverEngine"
-			set frontmostProcess to {name: "ScreenSaverEngine"}
+			set frontmostProcess to {name: "device.Screensaver"}
 		else
 			set frontmostProcess to first process where frontmost is true
 		end if
@@ -70,33 +70,33 @@ end getProcessActiveWindow
 on trackActivity()
 	set doRequest to true
 
-	set ApplePowerState to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
+	set DevicePowerState to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
 
-	if ApplePowerState contains "\"CurrentPowerState\"=4" then
-		if previousApplePowerState does not equal "4"
-			set previousApplePowerState to "4" -- awake
-			return my postActivityData("com.apple.PowerState", "4")
+	if DevicePowerState contains "\"CurrentPowerState\"=4" then
+		if previousDevicePowerState does not equal "4"
+			set previousDevicePowerState to "4" -- awake
+			return my postActivityData("device.PowerState", "AWAKE")
 		end if
-	else if ApplePowerState contains "\"CurrentPowerState\"=1" then
-		if previousApplePowerState does not equal "1"
-			set previousApplePowerState to "1" -- asleep
-			return my postActivityData("com.apple.PowerState", "1")
+	else if DevicePowerState contains "\"CurrentPowerState\"=1" then
+		if previousDevicePowerState does not equal "1"
+			set previousDevicePowerState to "1" -- asleep
+			return my postActivityData("device.PowerState", "ASLEEP")
 		end if
 	end if
 
 
-	if CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE equals true
-		set AppleClamshellState to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
+	if CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE equals true
+		set DeviceClamshellState to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
 
-		if AppleClamshellState contains "Yes"
-			if previousAppleClamshellState does not equal "YES"
-				set previousAppleClamshellState to "YES"
-				return my postActivityData("com.apple.AppleClamshellState", "YES")
+		if DeviceClamshellState contains "Yes"
+			if previousDeviceClamshellState does not equal "YES"
+				set previousDeviceClamshellState to "YES"
+				return my postActivityData("device.ClamshellState", "YES")
 			end if
 		else
-			if previousAppleClamshellState does not equal "NO"
-				set previousAppleClamshellState to "NO"
-				return my postActivityData("com.apple.AppleClamshellState", "NO")
+			if previousDeviceClamshellState does not equal "NO"
+				set previousDeviceClamshellState to "NO"
+				return my postActivityData("device.ClamshellState", "NO")
 			end if
 		end if
 	end if
@@ -144,12 +144,12 @@ end stopServer
 
 
 on run
-	set CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE to false
+	set CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE to false
 
 	set previousProcessName to ""
 	set previousWindowTitle to ""
-	set previousApplePowerState to ""
-	set previousAppleClamshellState to ""
+	set previousDevicePowerState to ""
+	set previousDeviceClamshellState to ""
 
 	set mePath to POSIX path of ((path to me as text) & "::")
 	set projectPath to mePath & "../../"
