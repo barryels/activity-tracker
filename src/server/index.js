@@ -52,6 +52,16 @@ function getFileProgrammingLanguage(fileExtension) {
 }
 
 
+function logActivity(data) {
+	var now = new Date(),
+		dateFormat = require('dateformat');
+
+	data.t = now.getTime();
+	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
+	logStream.end(JSON.stringify(data) + endOfLine);
+}
+
+
 router.use(function (req, res, next) {
 	next();
 });
@@ -65,8 +75,6 @@ router.get('/', function (req, res) {
 
 router.post('/activity', function (req, res) {
 	var response = {},
-		now = new Date(),
-		dateFormat = require('dateformat'),
 		projectName = '',
 		fileExtension = '',
 		fileMimeType = '',
@@ -75,7 +83,6 @@ router.post('/activity', function (req, res) {
 	var data = req.query;
 	response.a = data.a;
 	response.w = data.w;
-	response.t = now.getTime();
 
 	projectName = getProjectName(response.a, response.w);
 	if (projectName) {
@@ -88,15 +95,14 @@ router.post('/activity', function (req, res) {
 	}
 
 	/*
-	// Do we really need to store the language or can we just infer it later on, from the file extension (which is currently stored)
-	programmingLanguage = getFileProgrammingLanguage(fileExtension);
-	if (programmingLanguage) {
-		response.pl = programmingLanguage;
-	}
-	*/
+	 // Do we really need to store the language or can we just infer it later on, from the file extension (which is currently stored)
+	 programmingLanguage = getFileProgrammingLanguage(fileExtension);
+	 if (programmingLanguage) {
+	 response.pl = programmingLanguage;
+	 }
+	 */
 
-	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
-	logStream.end(JSON.stringify(response) + endOfLine);
+	logActivity(response);
 
 	res.end();
 });
@@ -111,4 +117,40 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(router);
 
+// process.stdin.resume();
+
+function exitHandler(options, err) {
+
+	if (err) {
+		console.log('err');
+		console.log(err.stack);
+	}
+
+	if (options.exit) {
+		logActivity({
+			a: 'com.barryels.ActivityTracker',
+			w: 'END'
+		});
+
+		setTimeout(function (context) {
+			console.log('timeout complete');
+			process.exit();
+		}, 2000, this);
+	}
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null, {exit: true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit: true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
+
 app.listen(port);
+
+logActivity({
+	a: 'com.barryels.ActivityTracker',
+	w: 'START'
+});
