@@ -2,7 +2,7 @@ global CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE
 
 global previousProcessName
 global previousWindowTitle
-global previousPowerState
+global previousApplePowerState
 global previousAppleClamshellState
 
 global mePath
@@ -70,19 +70,17 @@ end getProcessActiveWindow
 on trackActivity()
 	set doRequest to true
 
-	set _awake to "\"CurrentPowerState\"=4"
-	set _asleep to "\"CurrentPowerState\"=1"
-	set display_sleep_state to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
+	set ApplePowerState to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
 
-	if display_sleep_state contains _awake then
-		if previousPowerState does not equal "AWAKE"
-			set previousPowerState to "AWAKE"
-			return my postActivityData("com.apple.PowerState", "AWAKE")
+	if ApplePowerState contains "\"CurrentPowerState\"=4" then
+		if previousApplePowerState does not equal "4"
+			set previousApplePowerState to "4" -- awake
+			return my postActivityData("com.apple.PowerState", "4")
 		end if
-	else if display_sleep_state contains _asleep then
-		if previousPowerState does not equal "ASLEEP"
-			set previousPowerState to "ASLEEP"
-			return my postActivityData("com.apple.PowerState", "ASLEEP")
+	else if ApplePowerState contains "\"CurrentPowerState\"=1" then
+		if previousApplePowerState does not equal "1"
+			set previousApplePowerState to "1" -- asleep
+			return my postActivityData("com.apple.PowerState", "1")
 		end if
 	end if
 
@@ -146,11 +144,13 @@ end stopServer
 
 
 on run
+	set CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE to false
+
 	set previousProcessName to ""
 	set previousWindowTitle to ""
-	set previousPowerState to ""
+	set previousApplePowerState to ""
 	set previousAppleClamshellState to ""
-	set CONFIG_CLIENT_CHECK_APPLE_CLAMSHELL_STATE to false
+
 	set mePath to POSIX path of ((path to me as text) & "::")
 	set projectPath to mePath & "../../"
 
