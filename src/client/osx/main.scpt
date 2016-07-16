@@ -158,7 +158,7 @@ on run
 
 	repeat
 		my trackActivity()
-		delay(1)
+		delay(10)
 	end repeat
 
 end run
