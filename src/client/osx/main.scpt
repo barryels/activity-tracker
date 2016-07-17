@@ -1,3 +1,5 @@
+global CONFIG_SERVER_PORT
+global CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS
 global CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE
 
 global previousProcessName
@@ -123,7 +125,7 @@ end trackActivity
 
 
 on postActivityData(applicationName, windowTitle)
-	set shellScript to "curl -X POST 'http://localhost:9999/activity?a='" & applicationName & "'&w=" & windowTitle & "'"
+	set shellScript to "curl -X POST 'http://localhost:" & CONFIG_SERVER_PORT & "/activity?a='" & applicationName & "'&w=" & windowTitle & "'"
 
 	try
 		return do shell script shellScript & " > /dev/null 2>&1 &"
@@ -139,12 +141,14 @@ end startServer
 
 
 on stopServer()
-	do shell script "curl 'http://localhost:9999/command/shutdown' > /dev/null 2>&1 &"
+	do shell script "curl 'http://localhost:" & CONFIG_SERVER_PORT & "/command/shutdown' > /dev/null 2>&1 &"
 end stopServer
 
 
 on run
 	set CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE to false
+	set CONFIG_SERVER_PORT to "9999"
+	set CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS to 1
 
 	set previousProcessName to ""
 	set previousWindowTitle to ""
@@ -158,7 +162,7 @@ on run
 
 	repeat
 		my trackActivity()
-		delay(10)
+		delay(CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS)
 	end repeat
 
 end run
