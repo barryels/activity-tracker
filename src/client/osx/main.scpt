@@ -9,8 +9,6 @@ global previousDeviceClamshellState
 
 global mePath
 global projectPath
-global doQuit
-
 
 on encode_char(this_char)
 	set the ASCII_num to (the ASCII number this_char)
@@ -140,34 +138,21 @@ on startServer()
 end startServer
 
 
-on stopServer()
-	do shell script "curl 'http://localhost:" & CONFIG_SERVER_PORT & "/command/shutdown' > /dev/null 2>&1 &"
-end stopServer
+set CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE to false
+set CONFIG_SERVER_PORT to "9999"
+set CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS to 1
 
+set previousProcessName to ""
+set previousWindowTitle to ""
+set previousDevicePowerState to ""
+set previousDeviceClamshellState to ""
 
-on run
-	set CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE to false
-	set CONFIG_SERVER_PORT to "9999"
-	set CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS to 1
+set mePath to POSIX path of ((path to me as text) & "::")
+set projectPath to mePath & "../../"
 
-	set previousProcessName to ""
-	set previousWindowTitle to ""
-	set previousDevicePowerState to ""
-	set previousDeviceClamshellState to ""
+my startServer()
 
-	set mePath to POSIX path of ((path to me as text) & "::")
-	set projectPath to mePath & "../../"
-
-	my startServer()
-
-	repeat
-		my trackActivity()
-		delay(CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS)
-	end repeat
-
-end run
-
-on quit
-	my stopServer()
-	continue quit
-end quit
+repeat
+	my trackActivity()
+	delay(CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS)
+end repeat
