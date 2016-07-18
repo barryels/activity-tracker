@@ -1,11 +1,25 @@
 global CONFIG_SERVER_PORT
 global CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS
-global CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE
+global CONFIG_CLIENT_CHECK_DEVICE_LIDSTATE
+
+global PROCESS_NAME_SCREENSAVER
+global WINDOW_TITLE_SCREENSAVER_START
+global WINDOW_TITLE_SCREENSAVER_END
+
+global PROCESS_NAME_DEVICE_POWERSTATE
+global WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE
+global WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP
+
+global PROCESS_NAME_DEVICE_LIDSTATE
+global WINDOW_TITLE_DEVICE_LIDSTATE_OPEN
+global WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED
+
+global PROCESS_NAME_ACTIVITY_TRACKER
 
 global previousProcessName
 global previousWindowTitle
 global previousDevicePowerState
-global previousDeviceClamshellState
+global previousDeviceLidState
 
 global mePath
 global projectPath
@@ -41,7 +55,7 @@ end encode_text
 on getFrontmostProcess()
 	tell application "System Events"
 		if exists process "ScreenSaverEngine"
-			set frontmostProcess to {name: "device.Screensaver"}
+			set frontmostProcess to {name: PROCESS_NAME_SCREENSAVER}
 		else
 			set frontmostProcess to first process where frontmost is true
 		end if
@@ -56,10 +70,16 @@ on getProcessActiveWindow(_process)
 
 	if _processName is "Google Chrome"
 		tell application "Google Chrome" to return URL of active tab of front window
+	else if _processName is PROCESS_NAME_SCREENSAVER
+		return WINDOW_TITLE_SCREENSAVER_START
 	else
 		try
 			return name of window of _process
 		end try
+	end if
+
+	if previousProcessName equals PROCESS_NAME_SCREENSAVER
+		return WINDOW_TITLE_SCREENSAVER_END
 	end if
 
 	return ""
@@ -73,30 +93,30 @@ on trackActivity()
 	set DevicePowerState to do shell script "ioreg -n IODisplayWrangler | grep -i IOPowerManagement"
 
 	if DevicePowerState contains "\"CurrentPowerState\"=4" then
-		if previousDevicePowerState does not equal "4"
-			set previousDevicePowerState to "4" -- awake
-			return my postActivityData("device.PowerState", "AWAKE")
+		if previousDevicePowerState does not equal WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE
+			set previousDevicePowerState to WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE
+			return my postActivityData(PROCESS_NAME_DEVICE_POWERSTATE, WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE)
 		end if
 	else if DevicePowerState contains "\"CurrentPowerState\"=1" then
-		if previousDevicePowerState does not equal "1"
-			set previousDevicePowerState to "1" -- asleep
-			return my postActivityData("device.PowerState", "ASLEEP")
+		if previousDevicePowerState does not equal WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP
+			set previousDevicePowerState to WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP
+			return my postActivityData(PROCESS_NAME_DEVICE_POWERSTATE, WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP)
 		end if
 	end if
 
 
-	if CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE equals true
-		set DeviceClamshellState to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
+	if CONFIG_CLIENT_CHECK_DEVICE_LIDSTATE equals true
+		set DeviceLidState to do shell script "ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState  | head -1"
 
-		if DeviceClamshellState contains "Yes"
-			if previousDeviceClamshellState does not equal "YES"
-				set previousDeviceClamshellState to "YES"
-				return my postActivityData("device.ClamshellState", "YES")
+		if DeviceLidState contains "Yes"
+			if previousDeviceLidState does not equal WINDOW_TITLE_DEVICE_LIDSTATE_OPEN
+				set previousDeviceLidState to WINDOW_TITLE_DEVICE_LIDSTATE_OPEN
+				return my postActivityData(PROCESS_NAME_DEVICE_LIDSTATE, WINDOW_TITLE_DEVICE_LIDSTATE_OPEN)
 			end if
 		else
-			if previousDeviceClamshellState does not equal "NO"
-				set previousDeviceClamshellState to "NO"
-				return my postActivityData("device.ClamshellState", "NO")
+			if previousDeviceLidState does not equal WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED
+				set previousDeviceLidState to WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED
+				return my postActivityData(PROCESS_NAME_DEVICE_LIDSTATE, WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED)
 			end if
 		end if
 	end if
@@ -138,14 +158,28 @@ on startServer()
 end startServer
 
 
-set CONFIG_CLIENT_CHECK_DEVICE_CLAMSHELL_STATE to false
+set CONFIG_CLIENT_CHECK_DEVICE_LIDSTATE to false
 set CONFIG_SERVER_PORT to "9999"
 set CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS to 1
 
+set PROCESS_NAME_ACTIVITY_TRACKER to "C.B.AT"
+
+set PROCESS_NAME_SCREENSAVER to "D.SS"
+set WINDOW_TITLE_SCREENSAVER_START to "1"
+set WINDOW_TITLE_SCREENSAVER_END to "0"
+
+set PROCESS_NAME_DEVICE_POWERSTATE to "D.PS"
+set WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE to "1"
+set WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP to "0"
+
+set PROCESS_NAME_DEVICE_LIDSTATE to "D.LS"
+set WINDOW_TITLE_DEVICE_LIDSTATE_OPEN to "1"
+set WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED to "0"
+
 set previousProcessName to ""
 set previousWindowTitle to ""
-set previousDevicePowerState to ""
-set previousDeviceClamshellState to ""
+set previousDevicePowerState to WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE
+set previousDeviceLidState to WINDOW_TITLE_DEVICE_LIDSTATE_OPEN
 
 set mePath to POSIX path of ((path to me as text) & "::")
 set projectPath to mePath & "../../"

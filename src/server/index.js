@@ -11,11 +11,18 @@ var port = process.env.PORT || 9999,
 	programmingLanguages = require('./programming-languages');
 
 
+var STRING_MAPPINGS = [
+	{'C.B.AT': 'com.barryels.ActivityTracker'},
+	{'D.PS': 'device.PowerState'},
+	{'D.SS': 'device.Screensaver'}
+];
+
+
 function getProjectName(appName, windowTitle) {
 	// TODO add cleverness here, farm out processing to application-specific adapters, so new ones can be added later
 
 	if (appName === 'Google Chrome') {
-		return 'Internetting';
+		return '';
 	}
 
 	return '';
@@ -117,25 +124,34 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(router);
 
-// process.stdin.resume();
+process.stdin.resume();
 
 function exitHandler(options, err) {
 
 	if (err) {
 		console.log('err');
 		console.log(err.stack);
-	}
-
-	if (options.exit) {
 		logActivity({
-			a: 'com.barryels.ActivityTracker',
-			w: 'END'
+			a: 'C.B.AT',
+			w: 'error:' + JSON.stringify(err.stack)
 		});
 
 		setTimeout(function (context) {
-			console.log('timeout complete');
 			process.exit();
-		}, 2000, this);
+		}, 500, this);
+	} else {
+
+		if (options.exit) {
+			logActivity({
+				a: 'C.B.AT',
+				w: '0'
+			});
+
+			setTimeout(function (context) {
+				process.exit();
+			}, 500, this);
+		}
+
 	}
 }
 
@@ -151,6 +167,6 @@ process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
 app.listen(port);
 
 logActivity({
-	a: 'com.barryels.ActivityTracker',
-	w: 'START'
+	a: 'C.B.AT',
+	w: '1'
 });
