@@ -63,6 +63,10 @@ function logActivity(data) {
 	var now = new Date(),
 		dateFormat = require('dateformat');
 
+	if (data.a === 'Terminal') {
+		data.w = data.w.split('%D1')[0];
+	}
+
 	data.t = now.getTime();
 	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
 	logStream.end(JSON.stringify(data) + endOfLine);
