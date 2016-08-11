@@ -59,6 +59,32 @@ function getFileProgrammingLanguage(fileExtension) {
 }
 
 
+function getSummaryForDate(date) {
+	if (!date) {
+		return null;
+	}
+
+	return 'Summary';
+
+}
+
+
+function generateSummaryForDate(date) {
+	var now = new Date(),
+		dateFormat = require('dateformat');
+
+	if (!date) {
+		return null;
+	}
+
+	var summaryData = getSummaryForDate(date);
+
+	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '-summary.txt', {'flags': 'w'});
+	logStream.end(JSON.stringify(summaryData) + endOfLine);
+
+}
+
+
 function logActivity(data) {
 	var now = new Date(),
 		dateFormat = require('dateformat');
@@ -81,6 +107,49 @@ router.use(function (req, res, next) {
 router.get('/', function (req, res) {
 	res.write('Activity Tracker server is running!');
 	res.end();
+});
+
+
+router.get('/session/:date', function (req, res) {
+	var userActivitySessions = require('./user-activity-sessions'),
+		response = {},
+		date = '',
+		userActiveSessions = [],
+		userInactiveSessions = [];
+
+	res.setHeader('Content-Type', 'application/json');
+
+	if (!req.params.date) {
+		response.error = 'No date supplied';
+		res.write(JSON.stringify(response));
+		res.end();
+		return;
+	}
+
+	date = req.params.date;
+	if (date.split('-').length !== 3) {
+		response.error = 'Incorrect date format supplied';
+		res.write(JSON.stringify(response));
+		res.end();
+		return;
+	}
+
+	generateSummaryForDate(date);
+
+	userActivitySessions.getActiveSessions(date, function (contents) {
+		console.log(date);
+		response.userActiveSessions = String(contents);
+		res.write(JSON.stringify(response));
+		res.end();
+	});
+
+	// response.userActiveSessions = String(userActiveSessions);
+
+	// userInactiveSessions = userActivitySessions.getInactiveSessions(date);
+	// response.userInactiveSessions = userInactiveSessions;
+
+	// res.write(JSON.stringify(response));
+	// res.end();
 });
 
 

@@ -66,21 +66,23 @@ end getFrontmostProcess
 
 on getProcessActiveWindow(_process)
 
-	set _processName to (name of _process)
+	try
+		set _processName to (name of _process)
 
-	if _processName is "Google Chrome"
-		tell application "Google Chrome" to return URL of active tab of front window
-	else if _processName is PROCESS_NAME_SCREENSAVER
-		return WINDOW_TITLE_SCREENSAVER_START
-	else
-		try
-			return name of window of _process
-		end try
-	end if
+		if _processName is "Google Chrome"
+			tell application "Google Chrome" to return URL of active tab of front window
+		else if _processName is PROCESS_NAME_SCREENSAVER
+			return WINDOW_TITLE_SCREENSAVER_START
+		else
+			try
+				return name of window of _process
+			end try
+		end if
 
-	if previousProcessName equals PROCESS_NAME_SCREENSAVER
-		return WINDOW_TITLE_SCREENSAVER_END
-	end if
+		if previousProcessName equals PROCESS_NAME_SCREENSAVER
+			return WINDOW_TITLE_SCREENSAVER_END
+		end if
+	end try
 
 	return ""
 
