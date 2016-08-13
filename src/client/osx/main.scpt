@@ -76,12 +76,16 @@ on getProcessActiveWindow(_process)
 		else
 			try
 				return name of window of _process
+			on error errMsg
+				display dialog "name of window error: " & errMsg
 			end try
 		end if
 
 		if previousProcessName equals PROCESS_NAME_SCREENSAVER
 			return WINDOW_TITLE_SCREENSAVER_END
 		end if
+	on error errMsg
+		display dialog "getProcessActiveWindow(): " & errMsg
 	end try
 
 	return ""
@@ -149,6 +153,8 @@ on postActivityData(applicationName, windowTitle)
 
 	try
 		return do shell script shellScript & " > /dev/null 2>&1 &"
+	on error errMsg
+		display dialog "postActivityData(): " & errMsg
 	end try
 
 	return ""
