@@ -12,9 +12,9 @@ var port = process.env.PORT || 9999,
 
 
 var STRING_MAPPINGS = [
-	{'C.B.AT': 'com.barryels.ActivityTracker'},
-	{'D.PS': 'device.PowerState'},
-	{'D.SS': 'device.Screensaver'}
+	{ 'C.B.AT': 'com.barryels.ActivityTracker' },
+	{ 'D.PS': 'device.PowerState' },
+	{ 'D.SS': 'device.Screensaver' }
 ];
 
 
@@ -65,13 +65,26 @@ function getSummaryForDate(date) {
 	}
 
 	return 'Summary';
+}
 
+
+function getLogFilename(type) {
+	var now = new Date(),
+		dateFormat = require('dateformat'),
+		logFilename = dateFormat(now, 'yyyy-mm-dd');
+
+	if (type === 'SUMMARY') {
+		logFilename += '-summary';
+	}
+
+	logFilename += '.txt';
+
+	return logFilename;
 }
 
 
 function generateSummaryForDate(date) {
-	var now = new Date(),
-		dateFormat = require('dateformat');
+	var logFilename = getLogFilename('SUMMARY');
 
 	if (!date) {
 		return null;
@@ -79,22 +92,21 @@ function generateSummaryForDate(date) {
 
 	var summaryData = getSummaryForDate(date);
 
-	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '-summary.txt', {'flags': 'w'});
+	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + logFilename, { 'flags': 'w' });
 	logStream.end(JSON.stringify(summaryData) + endOfLine);
-
 }
 
 
 function logActivity(data) {
 	var now = new Date(),
-		dateFormat = require('dateformat');
+		logFilename = getLogFilename();
 
 	if (data.a === 'Terminal') {
 		data.w = data.w.split('%D1')[0];
 	}
 
 	data.t = now.getTime();
-	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + dateFormat(now, 'yyyy-mm-dd') + '.txt', {'flags': 'a'});
+	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + logFilename, { 'flags': 'a' });
 	logStream.end(JSON.stringify(data) + endOfLine);
 }
 
@@ -153,37 +165,46 @@ router.get('/session/:date', function (req, res) {
 });
 
 
+function linux_xprop_DataAdapter(data) {
+	return {
+		a: 'App',
+		w: 'Window Title'
+	};
+}
+
+
 router.post('/activity', function (req, res) {
-	var response = {},
+	var entry = {},
 		projectName = '',
 		fileExtension = '',
-		fileMimeType = '',
-		programmingLanguage = '';
+		fileMimeType = '';
 
-	var data = req.query;
-	response.a = data.a;
-	response.w = data.w;
-
-	projectName = getProjectName(response.a, response.w);
-	if (projectName) {
-		response.p = projectName;
-	}
-
-	fileExtension = getFileExtension(getFilePath(response.a, response.w));
-	if (fileExtension) {
-		response.fe = fileExtension;
-	}
+	console.log('[activity]', req.query);
 
 	/*
-	 // Do we really need to store the language or can we just infer it later on, from the file extension (which is currently stored)
-	 programmingLanguage = getFileProgrammingLanguage(fileExtension);
-	 if (programmingLanguage) {
-	 response.pl = programmingLanguage;
-	 }
-	 */
+	if (req.query.os === 'linux' && req.query.tool === 'xprop') {
+		data = linux_xprop_DataAdapter(req.query.data);
+	} else {
+		data = req.query.data;
+	}
 
-	logActivity(response);
+	entry.a = data.a;
+	entry.w = data.w;
 
+	projectName = getProjectName(entry.a, entry.w);
+	if (projectName) {
+		entry.p = projectName;
+	}
+
+	fileExtension = getFileExtension(getFilePath(entry.a, entry.w));
+	if (fileExtension) {
+		entry.fe = fileExtension;
+	}
+	*/
+
+	// logActivity(entry);
+
+	// res.end(JSON.stringify(req.query, '', 2));
 	res.end();
 });
 
@@ -193,7 +214,7 @@ router.get('/command/shutdown', function (req, res) {
 });
 
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(router);
 
@@ -229,13 +250,13 @@ function exitHandler(options, err) {
 }
 
 //do something when app is closing
-process.on('exit', exitHandler.bind(null, {exit: true}));
+process.on('exit', exitHandler.bind(null, { exit: true }));
 
 //catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit: true}));
+process.on('SIGINT', exitHandler.bind(null, { exit: true }));
 
 //catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
+process.on('uncaughtException', exitHandler.bind(null, { exit: true }));
 
 app.listen(port);
 

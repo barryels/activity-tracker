@@ -3,32 +3,41 @@
 var packageJSON = require('./../../package.json'),
 	exec = require('child_process').exec;
 
-var gitAdd,
-	gitCommit,
-	gitTag;
 
-// console.log(packageJSON.version);
+function gitAdd() {
+	return exec("git add -A '*'", function (error, stdout, stderr) {
+		console.log('stdout: ' + stdout);
+		console.log('stderr: ' + stderr);
+		if (error !== null) {
+			console.log('exec error: ' + error);
+		} else {
+			gitCommit();
+		}
+	});
+}
 
-gitAdd = exec("git add -A '*'", function (error, stdout, stderr) {
-	console.log('stdout: ' + stdout);
-	console.log('stderr: ' + stderr);
-	if (error !== null) {
-		console.log('exec error: ' + error);
-	} else {
-		gitCommit = exec("git commit -m 'version bump'", function (error, stdout, stderr) {
-			console.log('stdout: ' + stdout);
-			console.log('stderr: ' + stderr);
-			if (error !== null) {
-				console.log('exec error: ' + error);
-			} else {
-				gitTag = exec("git tag -a v" + packageJSON.version + " -m 'version " + packageJSON.version + "'", function (error, stdout, stderr) {
-					console.log('stdout: ' + stdout);
-					console.log('stderr: ' + stderr);
-					if (error !== null) {
-						console.log('exec error: ' + error);
-					}
-				});
-			}
-		});
-	}
-});
+function gitCommit() {
+	exec("git commit -m 'version bump'", function (error, stdout, stderr) {
+		console.log('stdout: ' + stdout);
+		console.log('stderr: ' + stderr);
+		if (error !== null) {
+			console.log('exec error: ' + error);
+		} else {
+			gitTag();
+		}
+	});
+}
+
+
+function gitTag() {
+	return exec("git tag -a v" + packageJSON.version + " -m 'version " + packageJSON.version + "'", function (error, stdout, stderr) {
+		console.log('stdout: ' + stdout);
+		console.log('stderr: ' + stderr);
+		if (error !== null) {
+			console.log('exec error: ' + error);
+		}
+	});
+}
+
+
+gitAdd();

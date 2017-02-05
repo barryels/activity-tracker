@@ -7,7 +7,7 @@
     "ui:web:start": "node ./src/ui/web/scripts/server.js",
     "ui:web:watch": "node ./src/ui/web/scripts/server.js",
     "___Clients___": "",
-    "linux:start": "echo 'Not implemented'",
+    "linux:start": "bash ./src/client/linux/main.sh",
     "win:start": "echo 'Not implemented'",
     "osx:start": "osascript './src/client/osx/main.scpt'",
     "___Server___": "",
@@ -18,7 +18,7 @@
     "version:bump:minor": "npm version --no-git-tag-version minor",
     "postversion": "node ./node_scripts/postversion/index.js",
     "start:dev": "npm run server:start:watch & npm run ui:web:watch",
-    "start": "npm run osx:start",
+    "start": "npm run linux:start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
