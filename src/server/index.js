@@ -8,7 +8,8 @@ var port = process.env.PORT || 9999,
 	endOfLine = require('os').EOL,
 	router = express.Router(),
 	fileExtensionMimeTypes = require('./file-extension-mime-types'),
-	programmingLanguages = require('./programming-languages');
+	programmingLanguages = require('./programming-languages'),
+	previousActivityEntry = null;
 
 
 var STRING_MAPPINGS = [
@@ -177,9 +178,16 @@ router.post('/activity', function (req, res) {
 	var entry = {},
 		projectName = '',
 		fileExtension = '',
-		fileMimeType = '';
+		fileMimeType = '',
+		doLogActivity = true;
 
-	console.log('[activity]', req.query);
+	if (req.query.a) {
+		entry.a = req.query.a;
+	}
+
+	if (req.query.w) {
+		entry.w = req.query.w;
+	}
 
 	/*
 	if (req.query.os === 'linux' && req.query.tool === 'xprop') {
@@ -202,7 +210,20 @@ router.post('/activity', function (req, res) {
 	}
 	*/
 
-	// logActivity(entry);
+	if (!previousActivityEntry) {
+		previousActivityEntry = entry;
+	} else {
+		if (previousActivityEntry.a === entry.a && previousActivityEntry.w === entry.w) {
+			doLogActivity = false;
+		}
+	}
+
+	if (doLogActivity) {
+		console.log('[activity]', entry.a, entry.w);
+		logActivity(entry);
+	}
+
+	previousActivityEntry = entry;
 
 	// res.end(JSON.stringify(req.query, '', 2));
 	res.end();
