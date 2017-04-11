@@ -46,7 +46,8 @@ get_active_app_and_window_title() {
 
 
 start_indicator(){
-	$(python $(get_path_to_me)/indicator.py)
+	return 0
+	# $(python $(get_path_to_me)/indicator.py)
 }
 
 
