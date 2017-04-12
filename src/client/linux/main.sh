@@ -23,7 +23,7 @@ get_path_to_me() {
 get_active_app_and_window_title() {
 	local WINDOW_TITLE=''
 
-	while true
+	while sleep ${CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS}
 	do
 		RESULT=$(xprop -id $(xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2) WM_CLASS WM_NAME)
 		RESULT=$(echo $RESULT | sed 's/"//g')
@@ -32,14 +32,14 @@ get_active_app_and_window_title() {
 		APP_NAME=${array[3]}
 		WINDOW_TITLE="${array[6]}${array[7]}${array[8]}${array[9]}${array[10]}${array[11]}\ ${array[12]}\ ${array[13]}"
 
+		# $(echo is_screen_locked)
+
 		if [ $(is_screen_locked) -eq 1 ]
 		then
 			post_activity_data $PROCESS_NAME_SCREENSAVER $WINDOW_TITLE_SCREENSAVER_ACTIVE
 		else
 			post_activity_data $APP_NAME $WINDOW_TITLE
 		fi
-
-		sleep ${CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS}
 	done
 }
 
@@ -55,7 +55,7 @@ is_screen_locked(){
 
 
 post_activity_data() {
-	$(echo "$1 $2")
+	# $(echo "$1 $2")
 	$(curl -s -X POST http://localhost:$CONFIG_SERVER_PORT/activity?a=$1\&w=$2)
 }
 
