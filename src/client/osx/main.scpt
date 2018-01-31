@@ -162,7 +162,7 @@ end postActivityData
 
 
 on startServer()
-	do shell script "/usr/local/bin/node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
+	do shell script "node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
 end startServer
 
 
