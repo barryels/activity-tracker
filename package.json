@@ -18,7 +18,7 @@
     "version:bump:minor": "npm version --no-git-tag-version minor",
     "postversion": "node ./node_scripts/postversion/index.js",
     "start:dev": "npm run server:start:watch & npm run ui:web:watch",
-    "start": "npm run linux:start",
+    "start": "npm run osx:start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -45,7 +45,6 @@
   "devDependencies": {
     "eslint": "^3.0.1",
     "mkdirp": "^0.5.1",
-    "node-sass": "^3.8.0",
     "nodemon": "^1.9.2",
     "npm-build-tools": "^2.2.5"
   }
