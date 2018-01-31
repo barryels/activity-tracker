@@ -13,4 +13,6 @@
 node_modules
 
 # App
-/src/data/*
+/src/data/*.txt
+
+!/src/data/.gitkeep
