@@ -12,7 +12,5 @@
 # Libraries
 node_modules
 
-# App
-/src/data/*.txt
-
-!/src/data/.gitkeep
+# Data
+/data/*.log

@@ -78,7 +78,7 @@ function getLogFilename(type) {
 		logFilename += '-summary';
 	}
 
-	logFilename += '.txt';
+	logFilename += '.log';
 
 	return logFilename;
 }
@@ -93,7 +93,7 @@ function generateSummaryForDate(date) {
 
 	var summaryData = getSummaryForDate(date);
 
-	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + logFilename, { 'flags': 'w' });
+	var logStream = fs.createWriteStream(process.cwd() + '/data/' + logFilename, { 'flags': 'w' });
 	logStream.end(JSON.stringify(summaryData) + endOfLine);
 }
 
@@ -107,7 +107,7 @@ function logActivity(data) {
 	}
 
 	data.t = now.getTime();
-	var logStream = fs.createWriteStream(process.cwd() + '/src/data/' + logFilename, { 'flags': 'a' });
+	var logStream = fs.createWriteStream(process.cwd() + '/data/' + logFilename, { 'flags': 'a' });
 	logStream.end(JSON.stringify(data) + endOfLine);
 }
 
