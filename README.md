@@ -25,13 +25,49 @@ The dashboard GUI is on its way.
     - In the right hand side panel you should see a list of applications
     - Find "Terminal" and select the checkbox 
     
-![Terminal - access for assistive devices - 1](https://github.com/barryels/activity-tracker/raw/master/doc/osx/installation/terminal-eada/1.png)
+![Terminal - access for assistive devices - 1](https://github.com/barryels/activity-tracker/raw/master/docs/osx/installation/terminal-eada/1.png)
 
-![Terminal - access for assistive devices - 2](https://github.com/barryels/activity-tracker/raw/master/doc/osx/installation/terminal-eada/2.png)
+![Terminal - access for assistive devices - 2](https://github.com/barryels/activity-tracker/raw/master/docs/osx/installation/terminal-eada/2.png)
 
-![Terminal - access for assistive devices - 3](https://github.com/barryels/activity-tracker/raw/master/doc/osx/installation/terminal-eada/3.png)
+![Terminal - access for assistive devices - 3](https://github.com/barryels/activity-tracker/raw/master/docs/osx/installation/terminal-eada/3.png)
     
-- Go to `PATH_TO_REPO/src/data/` and you'll see a newly created text file with all your logs :)
+- Go to `PATH_TO_REPO/data/` and you'll see a newly created text file with all your logs :)
+
+
+### Linux
+
+[TODO]
+
+
+### Windows
+
+[TODO]
+
+
+
+## Architecture (v1.x)
+
+    +----------+
+    |  Client  |  // integrate with host to get current application name and window title and call into logger
+    +-----+----+
+          |
+          | // log data (calls made via HTTP API)
+          |
+    +-----V----+
+    |  Logger  |  // check user config to decide what to log
+    +-----+----+
+          |
+          | // save data (calls made via webhooks)
+          |
+  +-------V-------+
+  |  Persistence  | // Store logs to disk / db / etc. User swappable layer.
+  +-------A-------+
+          |
+          | (read data)
+          |
+    +-----+------+
+    |  Reporter  |
+    +------------+
 
 
 ## Tracking
