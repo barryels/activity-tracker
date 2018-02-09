@@ -64,6 +64,13 @@ on getFrontmostProcess()
 end getFrontmostProcess
 
 
+on getFrontmostApplicationPath()
+	tell application "System Events"
+		return path to frontmost application as text
+	end tell
+end getFrontmostApplicationPath
+
+
 on getProcessActiveWindow(_process)
 
 	try
@@ -130,6 +137,7 @@ on trackActivity()
 
 	set process to my getFrontmostProcess()
 	set processName to encode_text(name of process as text, true, true)
+	set applicationPath to encode_text((my getFrontmostApplicationPath()), true, true)
 	set windowTitle to encode_text(((my getProcessActiveWindow(process)) as text), true, true)
 
 	if processName equals previousProcessName
@@ -142,7 +150,7 @@ on trackActivity()
 	set previousWindowTitle to windowTitle
 
 	if doRequest equals true
-		return my postActivityData(processName, windowTitle)
+		return my postActivityData(applicationPath, windowTitle)
 	end if
 
 end trackActivity
@@ -161,26 +169,26 @@ on postActivityData(applicationName, windowTitle)
 end postActivityData
 
 
-on startServer()
-	do shell script "node '" & projectPath & "server/index.js' > /dev/null 2>&1 &"
-end startServer
+on startLogger()
+	do shell script "node '" & projectPath & "logger/logger.js' > /dev/null 2>&1 &"
+end startLogger
 
 
 set CONFIG_CLIENT_CHECK_DEVICE_LIDSTATE to false
 set CONFIG_SERVER_PORT to "9999"
 set CONFIG_CLIENT_CHECK_INTERVAL_IN_SECONDS to 1
 
-set PROCESS_NAME_ACTIVITY_TRACKER to "C.B.AT"
+set PROCESS_NAME_ACTIVITY_TRACKER to "CBAT"
 
-set PROCESS_NAME_SCREENSAVER to "D.SS"
+set PROCESS_NAME_SCREENSAVER to "DSS"
 set WINDOW_TITLE_SCREENSAVER_START to "1"
 set WINDOW_TITLE_SCREENSAVER_END to "0"
 
-set PROCESS_NAME_DEVICE_POWERSTATE to "D.PS"
+set PROCESS_NAME_DEVICE_POWERSTATE to "DPS"
 set WINDOW_TITLE_DEVICE_POWERSTATE_AWAKE to "1"
 set WINDOW_TITLE_DEVICE_POWERSTATE_ASLEEP to "0"
 
-set PROCESS_NAME_DEVICE_LIDSTATE to "D.LS"
+set PROCESS_NAME_DEVICE_LIDSTATE to "DLS"
 set WINDOW_TITLE_DEVICE_LIDSTATE_OPEN to "1"
 set WINDOW_TITLE_DEVICE_LIDSTATE_CLOSED to "0"
 
@@ -192,7 +200,7 @@ set previousDeviceLidState to WINDOW_TITLE_DEVICE_LIDSTATE_OPEN
 set mePath to POSIX path of ((path to me as text) & "::")
 set projectPath to mePath & "../../"
 
-my startServer()
+my startLogger()
 
 repeat
 	my trackActivity()

@@ -583,5 +583,5 @@ module.exports = function () {
 
 	return {
 		getMimeTypeFromFileExtension: getMimeTypeFromFileExtension
-	}
+	};
 }();

@@ -2,19 +2,19 @@
 
 var list = {
 	CSS: {
-		ext: ['.css']
+		ext: ['css']
 	},
 	HTML: {
-		ext: ['.html']
+		ext: ['html']
 	},
 	JavaScript: {
-		ext: ['.js']
+		ext: ['js', 'jsx']
 	},
 	Java: {
-		ext: ['.java', '.class', '.jar']
+		ext: ['java', 'class', 'jar', 'ear', 'war']
 	},
 	JSON: {
-		ext: ['.java', '.class', '.jar']
+		ext: ['json']
 	}
 };
 
