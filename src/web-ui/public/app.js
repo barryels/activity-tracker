@@ -21,5 +21,4 @@ var App = function (m) {
 };
 
 
-
 m.mount(document.getElementById('app'), App(window.m));

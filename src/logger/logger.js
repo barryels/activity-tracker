@@ -1,13 +1,13 @@
 'use strict';
 
-var port = process.env.PORT || 9999,
+const port = process.env.PORT || 9999,
+	CLIENT_CHECK_INTERVAL = process.env.CLIENT_CHECK_INTERVAL || 2000,
 	fs = require('fs'),
 	express = require('express'),
 	app = express(),
-	bodyParser = require('body-parser'),
 	endOfLine = require('os').EOL,
 	router = express.Router(),
-	previousActivityEntry = null,
+	exec = require('child_process').exec,
 	constants = {
 		CBAT: 'com.barryels.ActivityTracker',
 		DPS: 'device.PowerState',
@@ -17,6 +17,8 @@ var port = process.env.PORT || 9999,
 		STOPPED: 'STOPPED',
 		EXIT: 'EXIT',
 	};
+
+let previousActivityEntry = null;
 
 
 function getFilePath(appName, windowTitle) {
@@ -29,6 +31,47 @@ function getFilePath(appName, windowTitle) {
 	return filePath;
 }
 
+
+function getAppNameAndWindowTitleFromOSContinually(interval) {
+	setInterval(() => {
+		getAppNameAndWindowTitleFromOS()
+			.then((result) => {
+				// console.log(JSON.stringify(result));
+				logActivity({
+					a: result.appName,
+					w: result.windowTitle,
+				});
+			})
+			.catch((error) => {
+				console.error('Activity Tracker :: Logger -> Error:', error);
+			});
+	}, interval);
+}
+
+
+function getAppNameAndWindowTitleFromOS() {
+	return new Promise((resolve, reject) => {
+		exec(`osascript ${__dirname}/../client/osx/main.scpt`,
+			(error, stdout) => {
+				// console.log('<------------------');
+				// console.log('error   ->', error);
+				// console.log('stdout  ->', stdout);
+				// console.log('------------------>');
+				if (error !== null) {
+					return reject(error);
+				}
+				const result = JSON.parse(stdout);
+				result.appName = getAppNameFromAppPath(result.appPath);
+				resolve(result);
+			});
+	});
+}
+
+
+function getAppNameFromAppPath(appPath) {
+	const appPathParts = appPath.split(':');
+	return appPathParts[appPathParts.length - 2].replace('.app', '');
+}
 
 
 function getLogFilename(type) {
@@ -45,18 +88,38 @@ function getLogFilename(type) {
 	return logFilename;
 }
 
+let logCounterSinceLastStart = 0;
 
-function logActivity(data) {
+function logActivity(entry) {
 	var now = new Date(),
 		logFilename = getLogFilename();
 
-	if (data.a === 'Terminal') {
-		data.w = data.w.split('%D1')[0];
+	if (entry.a === 'Terminal') {
+		entry.w = entry.w.split('%D1')[0];
 	}
 
-	data.t = now.getTime();
-	var logStream = fs.createWriteStream(process.cwd() + '/data/' + logFilename, { 'flags': 'a' });
-	logStream.end(JSON.stringify(data) + endOfLine);
+	let shouldLogActivity = true;
+
+	if (!previousActivityEntry) {
+		previousActivityEntry = entry;
+	} else {
+		if (previousActivityEntry.a === entry.a && previousActivityEntry.w === entry.w) {
+			shouldLogActivity = false;
+		}
+	}
+
+	previousActivityEntry = entry;
+
+	if (shouldLogActivity) {
+		// console.log('[activity]', entry.a, entry.w);
+		entry.t = now.getTime();
+		var logStream = fs.createWriteStream(process.cwd() + '/data/' + logFilename, {
+			'flags': 'a'
+		});
+		logCounterSinceLastStart += 1;
+		process.stdout.write("Activity Tracker :: Logger -> " + logCounterSinceLastStart + " events tracked\r");
+		logStream.end(JSON.stringify(entry) + endOfLine);
+	}
 }
 
 
@@ -79,7 +142,7 @@ router.post('/activity', function (req, res) {
 	var projectName = '';
 	var fileExtension = '';
 	var fileMimeType = '';
-	var doLogActivity = true;
+	var shouldLogActivity = true;
 
 	if (req.query.a) {
 		entry.a = req.query.a;
@@ -93,13 +156,13 @@ router.post('/activity', function (req, res) {
 		previousActivityEntry = entry;
 	} else {
 		if (previousActivityEntry.a === entry.a && previousActivityEntry.w === entry.w) {
-			doLogActivity = false;
+			shouldLogActivity = false;
 		}
 	}
 
 	previousActivityEntry = entry;
 
-	if (doLogActivity) {
+	if (shouldLogActivity) {
 		// console.log('[activity]', entry.a, entry.w);
 		logActivity(entry);
 	}
@@ -113,24 +176,18 @@ router.get('/command/shutdown', function (req, res) {
 });
 
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(router);
 
 process.stdin.resume();
 
 function exitHandler(options, err) {
-
 	if (err) {
-		// console.log('err', err.stack);
 		logActivity({
 			a: constants.CBAT,
 			w: 'error:' + JSON.stringify(err.stack)
 		});
-
-		setTimeout(function (context) {
-			process.exit();
-		}, 500, this);
+		doDelayedExit();
 	} else {
 		if (options.exit) {
 			logActivity({
@@ -138,9 +195,7 @@ function exitHandler(options, err) {
 				w: constants.EXIT
 			});
 
-			setTimeout(function (context) {
-				process.exit();
-			}, 500, this);
+			doDelayedExit();
 		} else {
 			logActivity({
 				a: constants.CBAT,
@@ -150,20 +205,36 @@ function exitHandler(options, err) {
 	}
 }
 
-//do something when app is closing
-process.on('exit', exitHandler.bind(null, { exit: true }));
+function doDelayedExit() {
+	setTimeout(function () {
+		process.exit();
+	}, 500);
+}
 
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+// do something when app is closing
+process.on('exit', exitHandler.bind(null, {
+	exit: true
+}));
 
-//catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, { exit: true }));
+// catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {
+	exit: true
+}));
+
+// catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {
+	exit: true
+}));
 
 
-app.listen(port);
+const listener = app.listen(port, function () {
+	console.log('Activity Tracker :: Logger -> listening on port ' + listener.address().port);
+});
 
 
 logActivity({
 	a: constants.CBAT,
 	w: constants.STARTED,
 });
+
+getAppNameAndWindowTitleFromOSContinually(CLIENT_CHECK_INTERVAL);
