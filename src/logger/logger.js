@@ -1,7 +1,7 @@
 'use strict';
 
-const port = process.env.PORT || 9999,
-	CLIENT_CHECK_INTERVAL = process.env.CLIENT_CHECK_INTERVAL || 2000,
+const port = process.env.LOGGER_PORT || 9999,
+	CLIENT_CHECK_INTERVAL = process.env.CLIENT_CHECK_INTERVAL || 5000,
 	fs = require('fs'),
 	express = require('express'),
 	app = express(),
@@ -32,23 +32,6 @@ function getFilePath(appName, windowTitle) {
 }
 
 
-function getAppNameAndWindowTitleFromOSContinually(interval) {
-	setInterval(() => {
-		getAppNameAndWindowTitleFromOS()
-			.then((result) => {
-				// console.log(JSON.stringify(result));
-				logActivity({
-					a: result.appName,
-					w: result.windowTitle,
-				});
-			})
-			.catch((error) => {
-				console.error('Activity Tracker :: Logger -> Error:', error);
-			});
-	}, interval);
-}
-
-
 function getAppNameAndWindowTitleFromOS() {
 	return new Promise((resolve, reject) => {
 		exec(`osascript ${__dirname}/../client/osx/main.scpt`,
@@ -60,11 +43,39 @@ function getAppNameAndWindowTitleFromOS() {
 				if (error !== null) {
 					return reject(error);
 				}
-				const result = JSON.parse(stdout);
-				result.appName = getAppNameFromAppPath(result.appPath);
+				let result = '';
+				try {
+					result = JSON.parse(stdout);
+					result.appName = getAppNameFromAppPath(result.appPath);
+				} catch (e) {
+					console.error('Error trying to parse script response as JSON', 'error:', e, 'stdout:', stdout);
+				}
 				resolve(result);
 			});
 	});
+}
+
+
+function getAndLogAppNameAndWindowTitleFromOS() {
+	getAppNameAndWindowTitleFromOS()
+		.then((result) => {
+			// console.log(JSON.stringify(result));
+			logActivity({
+				a: result.appName,
+				w: result.windowTitle,
+			});
+		})
+		.catch((error) => {
+			console.error('Activity Tracker :: Logger -> Error:', error);
+		});
+}
+
+
+function getAppNameAndWindowTitleFromOSContinually(interval) {
+	getAndLogAppNameAndWindowTitleFromOS();
+	setInterval(() => {
+		getAndLogAppNameAndWindowTitleFromOS();
+	}, interval);
 }
 
 
@@ -112,7 +123,7 @@ function logActivity(entry) {
 
 	if (shouldLogActivity) {
 		// console.log('[activity]', entry.a, entry.w);
-		entry.t = now.getTime();
+		entry.t = now.toISOString();
 		var logStream = fs.createWriteStream(process.cwd() + '/data/' + logFilename, {
 			'flags': 'a'
 		});

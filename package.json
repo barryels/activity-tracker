@@ -18,7 +18,7 @@
     "version:bump:minor": "npm version --no-git-tag-version minor",
     "postversion": "node ./node_scripts/postversion/index.js",
     "start:dev": "npm run logger:start:watch & npm run web_ui:start:watch",
-    "start": "npm run logger:start",
+    "start": "npm run logger:start & npm run web_ui:start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
